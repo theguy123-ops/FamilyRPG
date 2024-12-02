@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jacob Cruz RP Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        .stats {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .stats p {
+            margin: 5px 0;
+        }
+        .scene {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .input-section {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Jacob Cruz RP Game</h1>
+</header>
+<div class="container">
+    <div class="stats" id="stats">
+        <h3>Stats</h3>
+        <p><strong>Health:</strong> 100%</p>
+        <p><strong>Hunger:</strong> 0%</p>
+        <p><strong>Inventory:</strong> None</p>
+        <p><strong>Money:</strong> $100</p>
+        <p><strong>Wearing:</strong> T-shirt and jeans</p>
+        <p><strong>Date and Time:</strong> Saturday, 10:00 AM</p>
+    </div>
+
+    <div class="scene" id="scene">
+        <p>You’re sitting on the sofa in the living room watching Mr. Bean. The house is lively as your mom washes dishes in the kitchen, your dad sips coffee nearby, and your siblings are all busy with their activities.</p>
+        <ul>
+            <li>Emily is upstairs doing her homework.</li>
+            <li>Ash and Daniel are trying to do backflips in their room.</li>
+        </ul>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="action" placeholder="Type your action here...">
+        <button onclick="processAction()">Submit</button>
+    </div>
+</div>
+
+<script type="module">
+import { HfInference } from "@huggingface/inference";
+
+const client = new HfInference("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");  // Replace with your Hugging Face token
+
+// Game state variables
+let stats = {
+    health: 100,
+    hunger: 0,
+    inventory: [],
+    money: 100,
+    wearing: "T-shirt and jeans",
+    dateTime: "Saturday, 10:00 AM"
+};
+
+let sceneDescription = "You’re sitting on the sofa in the living room watching Mr. Bean. The house is lively as your mom washes dishes in the kitchen, your dad sips coffee nearby, and your siblings are all busy with their activities.";
+
+// Update stats and scene UI
+function updateStats(newStats) {
+    stats = { ...stats, ...newStats };
+    document.getElementById("stats").innerHTML = `
+        <h3>Stats</h3>
+        <p><strong>Health:</strong> ${stats.health}%</p>
+        <p><strong>Hunger:</strong> ${stats.hunger}%</p>
+        <p><strong>Inventory:</strong> ${stats.inventory.length ? stats.inventory.join(", ") : "None"}</p>
+        <p><strong>Money:</strong> $${stats.money}</p>
+        <p><strong>Wearing:</strong> ${stats.wearing}</p>
+        <p><strong>Date and Time:</strong> ${stats.dateTime}</p>
+    `;
+}
+
+function updateScene(newDescription) {
+    sceneDescription = newDescription;
+    document.getElementById("scene").innerHTML = `<p>${sceneDescription}</p>`;
+}
+
+// Function to call Hugging Face API for AI response
+async function callAI(prompt) {
+    const chatCompletion = await client.chatCompletion({
+        model: "Qwen/QwQ-32B-Preview",
+        messages: [
+            {
+                role: "user",
+                content: prompt
+            }
+        ],
+        max_tokens: 500
+    });
+
+    return chatCompletion.choices[0].message.content || "No response from AI.";
+}
+
+// Function to process user input and generate action
+async function processAction() {
+    const action = document.getElementById("action").value.trim();
+    if (!action) return;
+
+    let response = "";
+
+    // Predefined actions based on user input
+    switch (action.toLowerCase()) {
+        case "*go to the kitchen*":
+            response = "You walk into the kitchen. Mom is focused on the dishes, and Dad looks up briefly from his coffee.";
+            updateScene(response);
+            break;
+        case "*check on ash and daniel*":
+            response = "You head to Ash and Daniel's room. They're sweating as they fail to land another backflip. 'Hey, Jacob,' Daniel says, brushing his hair back.";
+            updateScene(response);
+            break;
+        case "*grab a snack*":
+            if (stats.hunger >= 20) {
+                stats.hunger -= 20;
+                response = "You grab an apple from the kitchen counter. It tastes fresh and helps your hunger.";
+            } else {
+                response = "You're not really hungry right now.";
+            }
+            updateScene(response);
+            updateStats({ hunger: stats.hunger });
+            break;
+        default:
+            // Call the AI if the action is not predefined
+            response = await callAI(action);
+            updateScene(response);
+            break;
+    }
+
+    document.getElementById("action").value = "";
+}
+
+updateStats(stats);
+
+</script>
+</body>
+</html>
