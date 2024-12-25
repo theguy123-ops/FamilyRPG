@@ -58,9 +58,6 @@
             z-index: 1;
         }
 
-        .house { background: #8B4513; }
-        .school { background: #4A90E2; }
-
         #dialogBox {
             position: fixed;
             bottom: 20px;
@@ -72,25 +69,12 @@
             border-radius: 5px;
             width: 400px;
             display: none;
-            z-index: 1000;
         }
 
         #inputBox {
             width: 100%;
             padding: 5px;
             margin-top: 10px;
-            border: none;
-            border-radius: 3px;
-        }
-
-        .action-box {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            color: white;
         }
     </style>
 </head>
@@ -100,27 +84,18 @@
             <div id="dialogText"></div>
             <input type="text" id="inputBox" placeholder="Type your message...">
         </div>
-        <div class="action-box">
-            <input type="text" id="actionInput" placeholder="Describe your action...">
-            <button onclick="processAction()">Do Action</button>
-        </div>
     </div>
 
     <script>
-    // ModernBERT API Integration
+    // Updated API Implementation
     const API = (function() {
-        const config = {
-            token: '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',
-            model: 'answerdotai/ModernBERT-base'
-        };
-
         async function query(data) {
             try {
                 const response = await fetch(
-                    `https://api-inference.huggingface.co/models/${config.model}`,
+                    "https://api-inference.huggingface.co/models/answerdotai/ModernBERT-base",
                     {
                         headers: {
-                            Authorization: `Bearer ${config.token}`,
+                            Authorization: "Bearer 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",
                             "Content-Type": "application/json",
                         },
                         method: "POST",
@@ -135,21 +110,7 @@
             }
         }
 
-        async function testAPI() {
-            try {
-                const response = await query({"inputs": "Hello, test connection."});
-                console.log("API Test Response:", response);
-                return !response.error;
-            } catch (error) {
-                console.error("API Test Failed:", error);
-                return false;
-            }
-        }
-
-        return {
-            query,
-            testAPI
-        };
+        return { query };
     })();
 
     // Game State
@@ -157,13 +118,11 @@
         characters: [
             { name: "Jacob", age: 14, color: "#FFD700", x: 800, y: 600, isPlayer: true },
             { name: "Emily", age: 15, color: "#FF69B4", x: 400, y: 400 },
-            { name: "Dan", age: 17, color: "#4169E1", x: 1200, y: 300 },
-            { name: "Ash", age: 16, color: "#9370DB", x: 600, y: 800 }
+            { name: "Dan", age: 17, color: "#4169E1", x: 1200, y: 300 }
         ],
         buildings: [
-            { name: "Family House", type: "house", x: 1000, y: 900, width: 150, height: 120 },
-            { name: "High School", type: "school", x: 200, y: 200, width: 300, height: 200 },
-            { name: "Shop", type: "commercial", x: 800, y: 200, width: 100, height: 80 }
+            { name: "House", type: "house", x: 1000, y: 900, width: 150, height: 120 },
+            { name: "School", type: "school", x: 200, y: 200, width: 300, height: 200 }
         ],
         player: null,
         currentInteraction: null
@@ -172,16 +131,11 @@
     // Initialize Game
     function initGame() {
         createGameElements();
-        
         // Test API connection
-        API.testAPI().then(success => {
-            if (success) {
-                console.log("API connected successfully!");
-            } else {
-                console.error("Failed to connect to API");
-            }
+        API.query({"inputs": "Hello!"}).then(response => {
+            console.log("API Test Response:", response);
         });
-
+        
         // Set up game loop
         setInterval(gameLoop, 1000/60);
     }
@@ -221,6 +175,40 @@
         });
     }
 
+    // Updated Dialog System
+    async function handleDialog(message, characterName) {
+        try {
+            const context = `${characterName}: As a ${characterName} in this game, respond to: ${message}`;
+            const response = await API.query({
+                "inputs": context
+            });
+            
+            console.log("API Response:", response); // Debug log
+            
+            if (response.error) {
+                console.error("API Error:", response.error);
+                return "Sorry, I couldn't process that right now.";
+            }
+            
+            // Extract the response text
+            let responseText = response;
+            if (Array.isArray(response)) {
+                responseText = response[0];
+            }
+            
+            if (typeof responseText === 'string') {
+                return responseText;
+            } else if (responseText && responseText.generated_text) {
+                return responseText.generated_text;
+            } else {
+                return "I'm not sure how to respond to that.";
+            }
+        } catch (error) {
+            console.error("Dialog error:", error);
+            return "Sorry, there was an error processing your message.";
+        }
+    }
+
     // Movement Controls
     const keys = {};
     document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
@@ -237,44 +225,31 @@
         if (keys['a']) playerChar.x -= speed;
         if (keys['d']) playerChar.x += speed;
 
-        // Keep player within bounds
-        playerChar.x = Math.max(0, Math.min(1570, playerChar.x));
-        playerChar.y = Math.max(0, Math.min(1170, playerChar.y));
-
         gameState.player.style.left = playerChar.x + 'px';
         gameState.player.style.top = playerChar.y + 'px';
     }
 
-    // Dialog System with ModernBERT Integration
+    // Dialog Box Setup
     const dialogBox = document.getElementById('dialogBox');
     const dialogText = document.getElementById('dialogText');
     const inputBox = document.getElementById('inputBox');
-
-    async function handleDialog(message) {
-        try {
-            const response = await API.query({
-                "inputs": message
-            });
-            
-            if (response.error) {
-                return "Sorry, I couldn't process that right now.";
-            }
-            
-            // Handle ModernBERT response format
-            return Array.isArray(response) ? response[0].generated_text : response.generated_text;
-        } catch (error) {
-            console.error("Dialog error:", error);
-            return "Sorry, there was an error processing your message.";
-        }
-    }
 
     inputBox.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter' && gameState.currentInteraction) {
             const message = inputBox.value.trim();
             if (message) {
-                const response = await handleDialog(message);
-                dialogText.innerHTML += `<br>You: ${message}<br>${gameState.currentInteraction.name}: ${response}`;
+                // Show thinking status
+                dialogText.innerHTML += `<br>You: ${message}<br>`;
                 inputBox.value = '';
+                inputBox.disabled = true;
+                
+                // Get AI response
+                const response = await handleDialog(message, gameState.currentInteraction.name);
+                
+                // Show response
+                dialogText.innerHTML += `${gameState.currentInteraction.name}: ${response}<br>`;
+                inputBox.disabled = false;
+                inputBox.focus();
             }
         }
     });
@@ -282,6 +257,7 @@
     function showDialog(text) {
         dialogBox.style.display = 'block';
         dialogText.innerHTML = text;
+        inputBox.value = '';
         inputBox.focus();
     }
 
@@ -292,47 +268,21 @@
         gameState.currentInteraction = null;
     }
 
-    // Action Processing
-    async function processAction() {
-        const actionInput = document.getElementById('actionInput');
-        const action = actionInput.value.trim();
-        
-        if (action) {
-            try {
-                const response = await API.query({
-                    "inputs": `Action: ${action}`
-                });
-                
-                showDialog(`Action: ${action}\nResult: ${response[0].generated_text}`);
-                actionInput.value = '';
-            } catch (error) {
-                console.error('Failed to process action:', error);
-                showDialog('Could not process action at this time.');
-            }
-        }
-    }
-
     // Interaction Check
     function checkInteractions() {
-        const playerChar = gameState.characters.find(c => c.isPlayer);
-        let foundInteraction = false;
-        
-        gameState.characters.forEach(char => {
-            if (!char.isPlayer) {
-                const distance = Math.hypot(playerChar.x - char.x, playerChar.y - char.y);
-                
-                if (distance < 50) {
-                    foundInteraction = true;
-                    if (!gameState.currentInteraction) {
+        if (!gameState.currentInteraction) {
+            const playerChar = gameState.characters.find(c => c.isPlayer);
+            
+            gameState.characters.forEach(char => {
+                if (!char.isPlayer) {
+                    const distance = Math.hypot(playerChar.x - char.x, playerChar.y - char.y);
+                    
+                    if (distance < 50) {
                         gameState.currentInteraction = char;
                         showDialog(`Talking to ${char.name}. What would you like to say?`);
                     }
                 }
-            }
-        });
-
-        if (!foundInteraction && gameState.currentInteraction) {
-            hideDialog();
+            });
         }
     }
 
