@@ -3,157 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jacob Cruz RP Game</title>
+    <title>Petition to Stop Beating in Nigerian Islamic Schools</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
             margin: 0;
             padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        header {
-            background: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-        }
+
         .container {
+            background-color: white;
             padding: 20px;
-        }
-        .stats {
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .stats p {
-            margin: 5px 0;
-        }
-        .scene {
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .input-section {
-            margin-top: 20px;
-        }
-        input[type="text"] {
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 80%;
-            padding: 10px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            max-width: 600px;
         }
+
+        header h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .petition {
+            margin-bottom: 20px;
+        }
+
         button {
-            padding: 10px 15px;
-            background: #333;
-            color: #fff;
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
         }
+
         button:hover {
-            background: #555;
+            background-color: #2980b9;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            height: 100px;
+        }
+
+        .comments {
+            margin-top: 20px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        #petitionOptions {
+            margin-top: 20px;
+        }
+
+        #commentList {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-<header>
-    <h1>Jacob Cruz RP Game</h1>
-</header>
-<div class="container">
-    <div class="stats" id="stats">
-        <h3>Stats</h3>
-        <p><strong>Health:</strong> 100%</p>
-        <p><strong>Hunger:</strong> 0%</p>
-        <p><strong>Inventory:</strong> None</p>
-        <p><strong>Money:</strong> $100</p>
-        <p><strong>Wearing:</strong> T-shirt and jeans</p>
-        <p><strong>Date and Time:</strong> Saturday, 10:00 AM</p>
+    <div class="container">
+        <header>
+            <h1>Petition to Stop Beating in Nigerian Islamic Schools</h1>
+        </header>
+
+        <section class="petition">
+            <p>
+                <strong>Story:</strong><br>
+                Many students in Nigerian Islamic schools are subjected to physical punishment. This practice not only harms their physical well-being but also their emotional and psychological development. It's time for a change. We need your support in signing this petition to stop corporal punishment in these schools.
+            </p>
+            
+            <button id="petitionButton" onclick="showPetitionOptions()">Sign Petition</button>
+        </section>
+
+        <section id="petitionOptions" class="petition-options" style="display: none;">
+            <p><strong>Do you agree with stopping corporal punishment in schools?</strong></p>
+            <button onclick="submitPetition('Agree')">Agree</button>
+            <button onclick="submitPetition('Disagree')">Disagree</button>
+        </section>
+
+        <section class="comments">
+            <h2>Comments</h2>
+            <textarea id="commentInput" placeholder="Leave a comment..."></textarea>
+            <button onclick="submitComment()">Submit Comment</button>
+
+            <div id="commentList"></div>
+        </section>
+
+        <footer>
+            <p>&copy; 2025 Stop School Beating Campaign</p>
+        </footer>
     </div>
 
-    <div class="scene" id="scene">
-        <p>You’re sitting on the sofa in the living room watching Mr. Bean. The house is lively as your mom washes dishes in the kitchen, your dad sips coffee nearby, and your siblings are all busy with their activities.</p>
-        <ul>
-            <li>Emily is upstairs doing her homework.</li>
-            <li>Ash and Daniel are trying to do backflips in their room.</li>
-        </ul>
-    </div>
-
-    <div class="input-section">
-        <input type="text" id="action" placeholder="Type your action here...">
-        <button onclick="processAction()">Submit</button>
-    </div>
-</div>
-
-<script>
-    let stats = {
-        health: 100,
-        hunger: 0,
-        inventory: [],
-        money: 100,
-        wearing: "T-shirt and jeans",
-        dateTime: "Saturday, 10:00 AM"
-    };
-
-    let sceneDescription = "You’re sitting on the sofa in the living room watching Mr. Bean. The house is lively as your mom washes dishes in the kitchen, your dad sips coffee nearby, and your siblings are all busy with their activities.";
-
-    function updateStats(newStats) {
-        stats = { ...stats, ...newStats };
-        document.getElementById("stats").innerHTML = `
-            <h3>Stats</h3>
-            <p><strong>Health:</strong> ${stats.health}%</p>
-            <p><strong>Hunger:</strong> ${stats.hunger}%</p>
-            <p><strong>Inventory:</strong> ${stats.inventory.length ? stats.inventory.join(", ") : "None"}</p>
-            <p><strong>Money:</strong> $${stats.money}</p>
-            <p><strong>Wearing:</strong> ${stats.wearing}</p>
-            <p><strong>Date and Time:</strong> ${stats.dateTime}</p>
-        `;
-    }
-
-    function updateScene(newDescription) {
-        sceneDescription = newDescription;
-        document.getElementById("scene").innerHTML = `<p>${sceneDescription}</p>`;
-    }
-
-    function processAction() {
-        const action = document.getElementById("action").value.trim();
-        if (!action) return;
-
-        let response = "";
-        switch (action.toLowerCase()) {
-            case "*go to the kitchen*":
-                response = "You walk into the kitchen. Mom is focused on the dishes, and Dad looks up briefly from his coffee.";
-                updateScene(response);
-                break;
-            case "*check on ash and daniel*":
-                response = "You head to Ash and Daniel's room. They're sweating as they fail to land another backflip. 'Hey, Jacob,' Daniel says, brushing his hair back.";
-                updateScene(response);
-                break;
-            case "*grab a snack*":
-                if (stats.hunger >= 20) {
-                    stats.hunger -= 20;
-                    response = "You grab an apple from the kitchen counter. It tastes fresh and helps your hunger.";
-                } else {
-                    response = "You're not really hungry right now.";
-                }
-                updateScene(response);
-                updateStats({ hunger: stats.hunger });
-                break;
-            default:
-                response = "You stand still, unsure what to do next.";
-                updateScene(response);
-                break;
+    <script>
+        // Function to show petition options when the button is clicked
+        function showPetitionOptions() {
+            document.getElementById('petitionOptions').style.display = 'block';
+            document.getElementById('petitionButton').style.display = 'none';
         }
 
-        document.getElementById("action").value = "";
-    }
+        // Function to submit the petition choice (Agree or Disagree)
+        function submitPetition(response) {
+            const petitionResponse = response;
+            localStorage.setItem('petitionResponse', petitionResponse); // Save response in local storage
+            alert(`Thank you for your response: ${petitionResponse}`);
+            document.getElementById('petitionOptions').style.display = 'none'; // Hide petition options
+            displayPetitionResponse(); // Display stored response
+        }
 
-    updateStats(stats);
-</script>
+        // Function to display the saved petition response (from localStorage)
+        function displayPetitionResponse() {
+            const savedResponse = localStorage.getItem('petitionResponse');
+            if (savedResponse) {
+                document.getElementById('petitionOptions').innerHTML += `<p>Your response: ${savedResponse}</p>`;
+            }
+        }
+
+        // Function to submit a comment
+        function submitComment() {
+            const commentInput = document.getElementById('commentInput').value;
+            if (commentInput.trim() !== "") {
+                const commentList = document.getElementById('commentList');
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment');
+                newComment.textContent = commentInput;
+                commentList.appendChild(newComment);
+                document.getElementById('commentInput').value = ""; // Clear the input after submission
+                saveComment(commentInput); // Save the comment to local storage
+            } else {
+                alert("Please enter a comment before submitting.");
+            }
+        }
+
+        // Function to save comments in localStorage
+        function saveComment(comment) {
+            let comments = JSON.parse(localStorage.getItem('comments')) || [];
+            comments.push(comment);
+            localStorage.setItem('comments', JSON.stringify(comments));
+            loadComments(); // Load the comments again after saving
+        }
+
+        // Function to load and display saved comments from localStorage
+        function loadComments() {
+            const savedComments = JSON.parse(localStorage.getItem('comments')) || [];
+            const commentList = document.getElementById('commentList');
+            commentList.innerHTML = ''; // Clear current comments
+            savedComments.forEach(function(comment) {
+                const newComment = document.createElement('div');
+                newComment.classList.add('comment');
+                newComment.textContent = comment;
+                commentList.appendChild(newComment);
+            });
+        }
+
+        // Load saved petition response and comments when the page loads
+        window.onload = function() {
+            displayPetitionResponse();
+            loadComments();
+        };
+    </script>
 </body>
 </html>
